@@ -8,14 +8,14 @@ const app = express();
 app.use(express.json());
 
 // =====================================================
-// ✅ Endpoint de verificação (Render / Browser / Healthcheck)
+// ✅ Health check (Render / Browser)
 // =====================================================
 app.get("/chat", (req, res) => {
   res.status(200).send("OK");
 });
 
 // =====================================================
-// ✅ Webhook principal da Z-API
+// ✅ Webhook da Z-API
 // =====================================================
 app.post("/chat", async (req, res) => {
   console.log("📩 Mensagem recebida:");
@@ -26,15 +26,14 @@ app.post("/chat", async (req, res) => {
     req.body?.message?.text ||
     "";
 
-  // Se não houver mensagem, apenas confirma recebimento
   if (!mensagem) {
     return res.sendStatus(200);
   }
 
   try {
-    // =====================================================
-    // 1️⃣ Chamada à OpenAI
-    // =====================================================
+    // ===============================
+    // 1️⃣ OpenAI
+    // ===============================
     const resposta = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -57,10 +56,7 @@ Evite excesso de versículos, mas quando usar, faça com contexto e carinho.
 Fale como um melhor amigo espiritual.
             `
           },
-          {
-            role: "user",
-            content: mensagem
-          }
+          { role: "user", content: mensagem }
         ]
       },
       {
@@ -73,9 +69,10 @@ Fale como um melhor amigo espiritual.
 
     const texto = resposta.data.choices[0].message.content;
 
-    // =====================================================
-    // 2️⃣ Envio da resposta para o WhatsApp (Z-API)
-    // =====================================================
+    // ===============================
+    // 2️⃣ Envio para WhatsApp (Z-API)
+    // ⚠️ AQUI ESTAVA O ERRO
+    // ===============================
     const zapiUrl = `https://api.z-api.io/instances/${process.env.ZAPI_INSTANCE_ID}/token/${process.env.ZAPI_TOKEN}/send-text`;
 
     await axios.post(
@@ -87,7 +84,7 @@ Fale como um melhor amigo espiritual.
       {
         headers: {
           "Content-Type": "application/json",
-          "Client-Token": process.env.ZAPI_CLIENT_TOKEN
+          "Client-Token": process.env.ZAPI_CLIENT_TOKEN // 🔥 ESSENCIAL
         }
       }
     );
@@ -102,10 +99,7 @@ Fale como um melhor amigo espiritual.
 });
 
 // =====================================================
-// ✅ Porta dinâmica (OBRIGATÓRIA para Render)
-// =====================================================
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`🔥 Conversa com o Pai rodando na porta ${PORT}`);
 });
