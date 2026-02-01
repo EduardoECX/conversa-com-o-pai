@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 // =====================================================
-// ✅ Endpoint de verificação (Render / Cloudflare / Browser)
+// ✅ Endpoint de verificação (Render / Browser / Healthcheck)
 // =====================================================
 app.get("/chat", (req, res) => {
   res.status(200).send("OK");
@@ -26,7 +26,7 @@ app.post("/chat", async (req, res) => {
     req.body?.message?.text ||
     "";
 
-  // Se não houver mensagem, apenas responde OK
+  // Se não houver mensagem, apenas confirma recebimento
   if (!mensagem) {
     return res.sendStatus(200);
   }
@@ -55,7 +55,7 @@ Acolha a dor antes de aconselhar.
 Use princípios cristãos com naturalidade.
 Evite excesso de versículos, mas quando usar, faça com contexto e carinho.
 Fale como um melhor amigo espiritual.
-`
+            `
           },
           {
             role: "user",
@@ -86,7 +86,8 @@ Fale como um melhor amigo espiritual.
       },
       {
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Client-Token": process.env.ZAPI_CLIENT_TOKEN
         }
       }
     );
